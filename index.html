@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="ur">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Zako Party Voice Test</title>
+    <style>
+      :root {
+        --bg: #f4f2fb;
+        --surface: #ffffff;
+        --surface-2: #eceaf6;
+        --ink: #1d1830;
+        --ink-soft: #57516e;
+        --line: #d8d3ea;
+        --brand: #6d28d9;
+        --brand-ink: #ffffff;
+        --brand-soft: #ede9fe;
+        --ok: #15803d;
+        --ok-bg: #dcfce7;
+        --warn-bg: #fef3c7;
+        --warn-ink: #92400e;
+        --err: #b91c1c;
+        --err-bg: #fee2e2;
+        --bar-track: #e2ddf2;
+        --bar-fill: #16a34a;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #12101f;
+          --surface: #1e1b31;
+          --surface-2: #282343;
+          --ink: #f1eefc;
+          --ink-soft: #b3acd0;
+          --line: #3a3460;
+          --brand: #8b5cf6;
+          --brand-ink: #ffffff;
+          --brand-soft: #2e2450;
+          --ok: #4ade80;
+          --ok-bg: #14301f;
+          --warn-bg: #3a2c10;
+          --warn-ink: #fcd34d;
+          --err: #f87171;
+          --err-bg: #3b1616;
+          --bar-track: #322c52;
+          --bar-fill: #4ade80;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+        line-height: 1.5;
+      }
+      main {
+        max-width: 560px;
+        margin: 0 auto;
+        padding: 20px 16px 48px;
+      }
+      h1 {
+        font-size: 26px;
+        margin: 4px 0 6px;
+        line-height: 1.25;
+      }
+      .intro {
+        color: var(--ink-soft);
+        font-size: 16px;
+        margin: 0 0 18px;
+      }
+      .status {
+        border-radius: 14px;
+        padding: 16px;
+        font-size: 18px;
+        font-weight: 600;
+        background: var(--surface-2);
+        border: 1px solid var(--line);
+        margin-bottom: 20px;
+        word-break: break-word;
+      }
+      .status.ok { background: var(--ok-bg); color: var(--ok); border-color: transparent; }
+      .status.warn { background: var(--warn-bg); color: var(--warn-ink); border-color: transparent; }
+      .status.err { background: var(--err-bg); color: var(--err); border-color: transparent; }
+      .status .label {
+        display: block;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        opacity: .75;
+        margin-bottom: 2px;
+      }
+      section {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 18px 16px;
+        margin-bottom: 16px;
+      }
+      section h2 {
+        font-size: 19px;
+        margin: 0 0 6px;
+      }
+      section p {
+        margin: 0 0 12px;
+        color: var(--ink-soft);
+        font-size: 15px;
+      }
+      button {
+        display: block;
+        width: 100%;
+        min-height: 58px;
+        border: none;
+        border-radius: 12px;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+        padding: 12px 16px;
+        margin-top: 10px;
+        background: var(--brand);
+        color: var(--brand-ink);
+      }
+      button:active { transform: scale(.99); }
+      button:disabled { opacity: .45; cursor: not-allowed; }
+      button.secondary {
+        background: var(--brand-soft);
+        color: var(--brand);
+      }
+      @media (prefers-color-scheme: dark) {
+        button.secondary { color: #c4b5fd; }
+      }
+      button.danger {
+        background: var(--err-bg);
+        color: var(--err);
+      }
+      button.small {
+        min-height: 50px;
+        font-size: 16px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 92px;
+        border: 1.5px solid var(--line);
+        border-radius: 12px;
+        padding: 12px;
+        font-size: 13px;
+        font-family: ui-monospace, Menlo, Consolas, monospace;
+        background: var(--bg);
+        color: var(--ink);
+        resize: vertical;
+        word-break: break-all;
+      }
+      textarea:focus { outline: 2px solid var(--brand); outline-offset: 1px; }
+      .meter-wrap {
+        margin-top: 14px;
+      }
+      .meter-label {
+        font-size: 14px;
+        color: var(--ink-soft);
+        margin-bottom: 6px;
+      }
+      .meter {
+        height: 18px;
+        border-radius: 999px;
+        background: var(--bar-track);
+        overflow: hidden;
+      }
+      .meter-fill {
+        height: 100%;
+        width: 0%;
+        background: var(--bar-fill);
+        border-radius: 999px;
+        transition: width 60ms linear;
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+      }
+      .row button { flex: 1; }
+      .hint {
+        font-size: 14px;
+        color: var(--ink-soft);
+        margin-top: 10px;
+      }
+      .steps-note {
+        font-size: 15px;
+        color: var(--ink-soft);
+      }
+      .steps-note li { margin-bottom: 6px; }
+      audio { display: none; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Zako Party — Voice Test</h1>
+      <p class="intro">2 phones ko jorne ka test. Koi account nahi, koi server nahi — code copy karke WhatsApp se bhejna hai. Dono phones par yehi page kholo.</p>
+
+      <div class="status" id="statusBox" role="status" aria-live="polite">
+        <span class="label">Status</span>
+        <span id="statusText">Mic band hai. Pehle neeche wala button dabao.</span>
+      </div>
+
+      <section>
+        <h2>Step 0 — Mic On karo</h2>
+        <p>Dono phones par pehle mic on karo. Jab browser ijazat mange to <strong>Allow</strong> dabana.</p>
+        <button id="btnMic">🎤 Mic On karo</button>
+        <div class="meter-wrap">
+          <div class="meter-label">Awaz ka level — mic me bolo, bar hilna chahiye:</div>
+          <div class="meter"><div class="meter-fill" id="meterFill"></div></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Step 1 — Phone 1: Code banao</h2>
+        <p>Sirf <strong>Phone 1</strong> wala ye kare. Code banega, usay copy karke WhatsApp se Phone 2 ko bhej do.</p>
+        <button id="btnOffer" disabled>Code banao</button>
+        <div style="margin-top:12px">
+          <textarea id="myCode" readonly placeholder="Aap ka code yahan aayega…"></textarea>
+        </div>
+        <button class="secondary small" id="btnCopyMine" disabled>Code Copy karo</button>
+      </section>
+
+      <section>
+        <h2>Step 2 — Doosre phone ka code yahan lagao</h2>
+        <p>Jo code WhatsApp par aaya hai, wo yahan paste karo. Phir:</p>
+        <ul class="steps-note">
+          <li><strong>Phone 2 ho</strong> (Phone 1 ka code mila hai) → <strong>Jawab banao</strong> dabao, jawab copy karke Phone 1 ko wapas bhej do.</li>
+          <li><strong>Phone 1 ho</strong> (Phone 2 ka jawab mila hai) → jawab paste karke <strong>Connect karo</strong> dabao.</li>
+        </ul>
+        <textarea id="theirCode" placeholder="Doosre phone ka code yahan paste karo…"></textarea>
+        <div class="row">
+          <button id="btnAnswer" disabled>Jawab banao</button>
+          <button id="btnConnect" disabled>Connect karo</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>Call ke button</h2>
+        <p>Connect hone ke baad dono ek doosre ki awaz sun sakenge.</p>
+        <div class="row">
+          <button class="secondary" id="btnMute" disabled>Mute karo</button>
+          <button class="danger" id="btnDisconnect" disabled>Disconnect</button>
+        </div>
+        <p class="hint">Note: beech me ye page band mat karna, warna code kaam nahi karega aur dobara code banana parega.</p>
+      </section>
+
+      <audio id="remoteAudio" autoplay playsinline></audio>
+    </main>
+
+    <script>
+      (function () {
+        "use strict";
+
+        var statusBox = document.getElementById("statusBox");
+        var statusText = document.getElementById("statusText");
+        var btnMic = document.getElementById("btnMic");
+        var btnOffer = document.getElementById("btnOffer");
+        var btnCopyMine = document.getElementById("btnCopyMine");
+        var btnAnswer = document.getElementById("btnAnswer");
+        var btnConnect = document.getElementById("btnConnect");
+        var btnMute = document.getElementById("btnMute");
+        var btnDisconnect = document.getElementById("btnDisconnect");
+        var myCode = document.getElementById("myCode");
+        var theirCode = document.getElementById("theirCode");
+        var meterFill = document.getElementById("meterFill");
+        var remoteAudio = document.getElementById("remoteAudio");
+
+        var localStream = null;
+        var pc = null;
+        var muted = false;
+        var audioCtx = null;
+        var meterRunning = false;
+
+        var RTC_CONFIG = {
+          iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+        };
+
+        function setStatus(text, kind) {
+          statusText.textContent = text;
+          statusBox.className = "status" + (kind ? " " + kind : "");
+        }
+
+        function setError(text) {
+          setStatus("Error: " + text, "err");
+        }
+
+        // ---------- Mic ----------
+        function startMeter(stream) {
+          try {
+            var AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) return;
+            if (!audioCtx) audioCtx = new AC();
+            if (audioCtx.state === "suspended") audioCtx.resume();
+            var source = audioCtx.createMediaStreamSource(stream);
+            var analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 512;
+            source.connect(analyser);
+            var data = new Uint8Array(analyser.frequencyBinCount);
+            meterRunning = true;
+            (function tick() {
+              if (!meterRunning) return;
+              analyser.getByteTimeDomainData(data);
+              var sum = 0;
+              for (var i = 0; i < data.length; i++) {
+                var v = (data[i] - 128) / 128;
+                sum += v * v;
+              }
+              var rms = Math.sqrt(sum / data.length);
+              var pct = Math.min(100, Math.round(rms * 260));
+              meterFill.style.width = pct + "%";
+              requestAnimationFrame(tick);
+            })();
+          } catch (e) { /* meter na bhi chale to call chalegi */ }
+        }
+
+        btnMic.addEventListener("click", function () {
+          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            setError("Is browser me mic nahi chal sakta. Page ko Chrome ya Safari me https par kholo.");
+            return;
+          }
+          setStatus("Mic ki ijazat mangi ja rahi hai… Allow dabao.", "warn");
+          navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+            .then(function (stream) {
+              localStream = stream;
+              startMeter(stream);
+              btnMic.disabled = true;
+              btnMic.textContent = "🎤 Mic On hai ✔";
+              btnOffer.disabled = false;
+              btnAnswer.disabled = false;
+              btnConnect.disabled = false;
+              setStatus("Mic on hai. Ab Phone 1 wala Code banao dabaye, Phone 2 wala code milne ka intezar kare.", "ok");
+            })
+            .catch(function (err) {
+              if (err && (err.name === "NotAllowedError" || err.name === "SecurityError")) {
+                setError("Mic ki ijazat nahi mili. Browser ki settings me is site ke liye Mic Allow karo, phir page refresh karke dobara Mic On karo.");
+              } else if (err && (err.name === "NotFoundError" || err.name === "OverconstrainedError")) {
+                setError("Is phone me mic nahi mila. Koi aur browser ya phone try karo.");
+              } else {
+                setError("Mic on nahi ho saka (" + (err && err.name ? err.name : "unknown") + "). Page refresh karke dobara try karo.");
+              }
+            });
+        });
+
+        // ---------- Peer connection ----------
+        function makePC() {
+          var conn = new RTCPeerConnection(RTC_CONFIG);
+          localStream.getTracks().forEach(function (t) { conn.addTrack(t, localStream); });
+          conn.ontrack = function (ev) {
+            if (ev.streams && ev.streams[0]) {
+              remoteAudio.srcObject = ev.streams[0];
+              var p = remoteAudio.play();
+              if (p && p.catch) p.catch(function () {});
+            }
+          };
+          conn.onconnectionstatechange = function () {
+            if (conn.connectionState === "connected") {
+              setStatus("Connected! ✔ Ab dono ek doosre ki awaz sun sakte hain. Bolo aur test karo.", "ok");
+              btnMute.disabled = false;
+              btnDisconnect.disabled = false;
+            } else if (conn.connectionState === "disconnected") {
+              setStatus("Connection kamzor ho gaya hai… thoda intezar karo, khud theek ho sakta hai.", "warn");
+            } else if (conn.connectionState === "failed") {
+              setError("Connection fail ho gaya. Dono phones ka internet check karo, page refresh karo aur dobara naye code banao.");
+              btnDisconnect.disabled = false;
+            } else if (conn.connectionState === "closed") {
+              setStatus("Call khatam ho gayi.", "");
+            }
+          };
+          return conn;
+        }
+
+        function waitIceComplete(conn) {
+          return new Promise(function (resolve) {
+            if (conn.iceGatheringState === "complete") { resolve(); return; }
+            var done = false;
+            function finish() {
+              if (done) return;
+              done = true;
+              conn.removeEventListener("icegatheringstatechange", check);
+              resolve();
+            }
+            function check() {
+              if (conn.iceGatheringState === "complete") finish();
+            }
+            conn.addEventListener("icegatheringstatechange", check);
+            setTimeout(finish, 10000); // safety: 10 second se zyada na ruke
+          });
+        }
+
+        function parseCode(text, wantType) {
+          var obj;
+          try {
+            obj = JSON.parse(text);
+          } catch (e) {
+            return null;
+          }
+          if (!obj || !obj.sdp || obj.type !== wantType) return null;
+          return obj;
+        }
+
+        // ---------- Phone 1: offer ----------
+        btnOffer.addEventListener("click", function () {
+          if (!localStream) { setError("Pehle Mic On karo."); return; }
+          if (pc) { try { pc.close(); } catch (e) {} }
+          pc = makePC();
+          btnOffer.disabled = true;
+          setStatus("Code ban raha hai… thoda intezar karo.", "warn");
+          pc.createOffer()
+            .then(function (offer) { return pc.setLocalDescription(offer); })
+            .then(function () { return waitIceComplete(pc); })
+            .then(function () {
+              myCode.value = JSON.stringify(pc.localDescription);
+              btnCopyMine.disabled = false;
+              btnOffer.disabled = false;
+              btnDisconnect.disabled = false;
+              setStatus("Code ban gaya ✔ Ab Copy karo aur WhatsApp se Phone 2 ko bhej do. Phir Phone 2 ka jawab yahan paste karke Connect karo.", "ok");
+            })
+            .catch(function () {
+              btnOffer.disabled = false;
+              setError("Code nahi ban saka. Page refresh karke dobara try karo.");
+            });
+        });
+
+        // ---------- Phone 2: answer ----------
+        btnAnswer.addEventListener("click", function () {
+          if (!localStream) { setError("Pehle Mic On karo."); return; }
+          var text = theirCode.value.trim();
+          if (!text) { setError("Pehle Phone 1 ka code upar wale box me paste karo, phir Jawab banao dabao."); return; }
+          var offer = parseCode(text, "offer");
+          if (!offer) {
+            setError("Ye code ghalat hai. Phone 1 ka poora code copy karke paste karo — aadha code kaam nahi karega.");
+            return;
+          }
+          if (pc) { try { pc.close(); } catch (e) {} }
+          pc = makePC();
+          btnAnswer.disabled = true;
+          setStatus("Jawab ban raha hai… thoda intezar karo.", "warn");
+          pc.setRemoteDescription(new RTCSessionDescription(offer))
+            .then(function () { return pc.createAnswer(); })
+            .then(function (answer) { return pc.setLocalDescription(answer); })
+            .then(function () { return waitIceComplete(pc); })
+            .then(function () {
+              myCode.value = JSON.stringify(pc.localDescription);
+              btnCopyMine.disabled = false;
+              btnAnswer.disabled = false;
+              btnDisconnect.disabled = false;
+              setStatus("Jawab ban gaya ✔ Ab Copy karo aur WhatsApp se Phone 1 ko wapas bhej do. Phone 1 Connect karega to awaz shuru ho jayegi.", "ok");
+            })
+            .catch(function () {
+              btnAnswer.disabled = false;
+              setError("Jawab nahi ban saka. Code dobara check karo — poora copy hua tha ya nahi.");
+            });
+        });
+
+        // ---------- Phone 1: connect with answer ----------
+        btnConnect.addEventListener("click", function () {
+          var text = theirCode.value.trim();
+          if (!text) { setError("Pehle Phone 2 ka jawab code box me paste karo, phir Connect dabao."); return; }
+          var answer = parseCode(text, "answer");
+          if (!answer) {
+            setError("Ye jawab wala code nahi lag raha. Phone 2 se mila poora jawab code paste karo. (Note: Connect sirf Phone 1 par, jawab milne ke baad hota hai.)");
+            return;
+          }
+          if (!pc) {
+            setError("Pehle is phone par Code banao dabao, phir jawab paste karke Connect karo.");
+            return;
+          }
+          setStatus("Connect ho raha hai…", "warn");
+          pc.setRemoteDescription(new RTCSessionDescription(answer))
+            .then(function () {
+              setStatus("Jawab lag gaya. Connection ban raha hai… Connected likha aane ka intezar karo.", "warn");
+            })
+            .catch(function () {
+              setError("Jawab nahi lag saka. Shayad jawab purane code ka hai. Dono phones par page refresh karo aur naye code dobara banao.");
+            });
+        });
+
+        // ---------- Copy ----------
+        function copyText(text, doneMsg) {
+          function done() { setStatus(doneMsg, "ok"); }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done).catch(function () { fallback(); });
+          } else {
+            fallback();
+          }
+          function fallback() {
+            myCode.removeAttribute("readonly");
+            myCode.focus();
+            myCode.select();
+            myCode.setSelectionRange(0, myCode.value.length);
+            var ok = false;
+            try { ok = document.execCommand("copy"); } catch (e) {}
+            myCode.setAttribute("readonly", "");
+            if (ok) done();
+            else setError("Copy nahi ho saka. Code wale box par ungli daba kar rakho, Select All karo, phir Copy karo.");
+          }
+        }
+
+        btnCopyMine.addEventListener("click", function () {
+          if (!myCode.value) { setError("Pehle code banao, phir copy hoga."); return; }
+          copyText(myCode.value, "Code copy ho gaya ✔ Ab WhatsApp kholo aur doosre phone ko bhej do.");
+        });
+
+        // ---------- Mute / Disconnect ----------
+        btnMute.addEventListener("click", function () {
+          if (!localStream) return;
+          muted = !muted;
+          localStream.getAudioTracks().forEach(function (t) { t.enabled = !muted; });
+          btnMute.textContent = muted ? "Unmute karo" : "Mute karo";
+          setStatus(muted ? "Aap mute ho — doosra phone aapki awaz nahi sun sakta." : "Mic dobara on hai — aapki awaz ja rahi hai.", muted ? "warn" : "ok");
+        });
+
+        btnDisconnect.addEventListener("click", function () {
+          if (pc) { try { pc.close(); } catch (e) {} pc = null; }
+          remoteAudio.srcObject = null;
+          muted = false;
+          btnMute.textContent = "Mute karo";
+          btnMute.disabled = true;
+          btnDisconnect.disabled = true;
+          setStatus("Call khatam ho gayi. Dobara test ke liye naye code banao — purane code kaam nahi karenge.", "");
+        });
+      })();
+    </script>
+  </body>
+</html>
