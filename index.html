@@ -361,6 +361,13 @@
       .tab .t-ic svg{ width:100%; height:100%; }
       .tab.on{ color:var(--gold); }
 
+      /* ---------- Login gate (pehle login, phir app) ---------- */
+      body.gated .tabbar, body.gated .topbar{ display:none; }
+      .gbtn{ background:#fff; color:#1f2937; border:1px solid #dadce0; font-weight:700; }
+      .gbtn .gmark{ font-size:19px; font-weight:900; color:#4285F4; margin-right:10px; }
+      .divider{ display:flex; align-items:center; gap:10px; color:#9aa3b2; font-size:13px; margin:16px 0 2px; }
+      .divider:before, .divider:after{ content:''; flex:1; height:1px; background:var(--line); }
+
       .spin-result{ font-family:"Poppins",sans-serif; font-size:21px; font-weight:700; text-align:center; min-height:32px; margin-top:12px; color:var(--gold-soft); }
       a.link{ color:var(--gold); font-weight:700; }
       .kbd{ background:#1c0b36; border:1px solid var(--line); border-radius:6px; padding:1px 7px; font-size:13.5px; }
@@ -382,7 +389,7 @@
     <div class="wrap">
 
       <!-- ===================== HOME ===================== -->
-      <section class="screen active" id="scr-home">
+      <section class="screen" id="scr-home">
         <h2>Rooms</h2>
 
         <div class="notice warn hidden" id="appidNotice">
@@ -707,18 +714,20 @@
       </section>
 
       <!-- ===================== LOGIN / ACCOUNT (Phase 2) ===================== -->
-      <section class="screen" id="scr-login">
+      <section class="screen active" id="scr-login">
         <button class="back-btn" id="loginBackBtn" type="button">← Wapas</button>
-        <h2>🔐 Login / Account</h2>
-        <p class="sub">Ek account banao to naam har phone par wahi milega. Ye sirf test account hai.</p>
+        <h2 style="text-align:center; font-size:30px; margin-top:26px">Zako Party</h2>
+        <p class="sub" style="text-align:center">Login karo, phir party join karo.</p>
         <div class="card" id="loginNotReady" style="text-align:center">
           <h3>Firebase abhi connect nahi hai</h3>
           <p>Account banane se pehle Firebase project banao aur uski config GitHub me file me dalo. Uske baghair app local mode me chalegi.</p>
-          <p style="margin:0">Steps: console.firebase.google.com → project banao → Authentication me Email/Password ON karo → Firestore Database banao → Project settings se Web app ki config lo → GitHub me file me <span class="kbd">FIREBASE_CONFIG</span> wali line me bharein (chat me mat bhejo).</p>
+          <p style="margin:0">Steps: console.firebase.google.com → project banao → Authentication me Email/Password aur Google ON karo → Authorized domains me website ka domain add karo → Firestore Database banao → Project settings se Web app ki config lo → GitHub me file me <span class="kbd">FIREBASE_CONFIG</span> wali line me bharein (chat me mat bhejo).</p>
         </div>
         <div id="loginForm" class="hidden">
           <div class="card">
             <p id="loginStatus" style="margin-top:0">Logged out ho.</p>
+            <button class="btn gbtn" id="googleBtn" type="button" style="margin-top:10px"><span class="gmark">G</span>Sign in with Google</button>
+            <div class="divider" id="loginDivider">ya Email se</div>
             <label class="flabel" for="loginName">Naam (sign up ke liye)</label>
             <input class="field" id="loginName" type="text" placeholder="Masalan: Zaky" autocomplete="off" />
             <label class="flabel" for="loginEmail">Email</label>
@@ -1121,14 +1130,7 @@
     /* FIREBASE CONFIG (Phase 2) — app ke malik ko GitHub me yahan apne Firebase project ki
        web config bharni hai. Ye config chat me KABHI mat bhejo — sirf GitHub editor me bharein.
        Jab tak ye null hai, app bilkul pehle jaisi local mode me chalegi. */
-    var FIREBASE_CONFIG = {
-  apiKey: "AIzaSyCK0rMEEyigN2NxAVTgnSFuOGn_O8rgoNk",
-  authDomain: "zako-party.firebaseapp.com",
-  projectId: "zako-party",
-  storageBucket: "zako-party.firebasestorage.app",
-  messagingSenderId: "457167589592",
-  appId: "1:457167589592:web:ed0eec16675064e2eb47ad"
-};;
+    var FIREBASE_CONFIG = null;
     // GitHub me upar wali line ko is line se badlein (apni config ke saath):
     // var FIREBASE_CONFIG = { apiKey:'...', authDomain:'...', projectId:'...', storageBucket:'...', messagingSenderId:'...', appId:'...' };
     var S = {
@@ -1147,9 +1149,11 @@
     /* ---------------- Navigation ---------------- */
     var SCREENS = ['home','room','game','moment','message','me','wallet','store','backpack','host','agency','settings','search','profile','editprofile','fruitparty','teenpatti','login'];
     var TAB_OF = { home:'home', room:'room', game:'game', moment:'moment', message:'message', me:'me', wallet:'me', store:'me', backpack:'me', host:'me', agency:'me', settings:'me', profile:'me', editprofile:'me', fruitparty:'game', teenpatti:'game', login:'me' };
-    var current = 'home';
+    var current = 'login';
     function show(id){
+      if(typeof fbReady !== 'undefined' && fbReady && !fbUser && id !== 'login'){ id = 'login'; }
       current = id;
+      if(id === 'login' && typeof refreshLogin === 'function'){ refreshLogin(); }
       SCREENS.forEach(function(s){ document.getElementById('scr-'+s).classList.toggle('active', s === id); });
       var tabs = document.querySelectorAll('.tab');
       tabs.forEach(function(t){ t.classList.toggle('on', t.getAttribute('data-tab') === TAB_OF[id]); });
@@ -1986,6 +1990,11 @@
 
     /* ---------------- Firebase (Phase 2) ---------------- */
     var fbReady = false, fbUser = null;
+    function applyGate(){
+      var gated = !!(fbReady && !fbUser);
+      document.body.classList.toggle('gated', gated);
+      if(gated && current !== 'login'){ show('login'); }
+    }
     function fbInit(){
       try{
         if(typeof FIREBASE_CONFIG === 'undefined' || !FIREBASE_CONFIG || !FIREBASE_CONFIG.apiKey) return;
@@ -2003,7 +2012,24 @@
             }).catch(function(){});
           }
           refreshLogin();
+          applyGate();
+          if(u && current === 'login'){ show('home'); }
         });
+        firebase.auth().getRedirectResult().then(function(res){
+          if(res && res.user){
+            var u = res.user;
+            var nm = u.displayName || '';
+            if(nm){ S.name = nm; lsSet('name', nm); refreshMe(); }
+            return firebase.firestore().collection('users').doc(u.uid).get().then(function(doc){
+              if(!doc.exists){
+                return firebase.firestore().collection('users').doc(u.uid).set({
+                  name: nm, email: u.email || '', zakoid: lsGet('zakoid',''),
+                  createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+              }
+            });
+          }
+        }).catch(function(e){ if(fbUser) return; fbShowErr(e); });
       }catch(e){ fbReady = false; }
     }
     function refreshLogin(){
@@ -2016,17 +2042,28 @@
       var loginBtn = document.getElementById('loginBtn');
       var signupBtn = document.getElementById('signupBtn');
       var logoutBtn = document.getElementById('logoutBtn');
+      var googleBtn = document.getElementById('googleBtn');
+      var divider = document.getElementById('loginDivider');
+      var backBtn = document.getElementById('loginBackBtn');
       var err = document.getElementById('loginErr'); err.classList.add('hidden');
       if(fbUser){
         status.textContent = 'Logged in: ' + (fbUser.email || '') + ' • Naam: ' + myName();
         loginBtn.classList.add('hidden'); signupBtn.classList.add('hidden'); logoutBtn.classList.remove('hidden');
+        if(googleBtn) googleBtn.classList.add('hidden'); if(divider) divider.classList.add('hidden');
+        if(backBtn) backBtn.classList.remove('hidden');
       } else {
         status.textContent = 'Logged out ho.';
         loginBtn.classList.remove('hidden'); signupBtn.classList.remove('hidden'); logoutBtn.classList.add('hidden');
+        if(googleBtn) googleBtn.classList.remove('hidden'); if(divider) divider.classList.remove('hidden');
+        if(backBtn) backBtn.classList.toggle('hidden', !!fbReady);
       }
     }
     function loginErrMsg(e){
       var code = (e && e.code) ? String(e.code) : '';
+      if(code.indexOf('configuration-not-found') !== -1) return 'Firebase me login ON nahi hai — Authentication me Email/Password aur Google Enable karo.';
+      if(code.indexOf('operation-not-allowed') !== -1) return 'Ye login tareeqa Firebase me ON nahi hai — Sign-in method me isay Enable karo.';
+      if(code.indexOf('unauthorized-domain') !== -1) return 'Is website ka domain Firebase me authorize nahi — Authorized domains me ye domain add karo.';
+      if(code.indexOf('account-exists-with-different-credential') !== -1) return 'Is email ka account kisi aur tareeqe se bana hai — usi tareeqe se login karo.';
       if(code.indexOf('wrong-password') !== -1 || code.indexOf('invalid-credential') !== -1) return 'Password ghalat hai ya account nahi mila.';
       if(code.indexOf('user-not-found') !== -1) return 'Is email ka account nahi mila — pehle Sign Up karo.';
       if(code.indexOf('email-already-in-use') !== -1) return 'Is email ka account pehle se hai — Login dabao.';
@@ -2064,6 +2101,11 @@
       }).then(function(){
         S.name = document.getElementById('loginName').value.trim(); lsSet('name', S.name); refreshMe();
       }).catch(fbShowErr);
+    });
+    document.getElementById('googleBtn').addEventListener('click', function(){
+      if(!fbReady) return;
+      var provider = new firebase.auth.GoogleAuthProvider();
+      firebase.auth().signInWithRedirect(provider).catch(fbShowErr);
     });
     document.getElementById('logoutBtn').addEventListener('click', function(){
       if(!fbReady) return;
